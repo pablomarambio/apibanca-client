@@ -34,6 +34,13 @@ module Apibanca
 				end
 			end
 
+			def delete uri
+				Apibanca::Client.conn_json.delete do |req|
+					req.url uri
+					req.headers['bc-auth-token'] = Apibanca::Client::SECRET
+				end
+			end
+
 			def conn_json
 				check_requirements!
 				@conn ||= Faraday.new(:url => BASE_URI) do |f|

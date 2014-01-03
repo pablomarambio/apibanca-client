@@ -23,6 +23,11 @@ class Apibanca::Routine < Apibanca::ProxyBase
 		self.merge! r.body
 	end
 
+	def load_tasks
+		r = Apibanca::Client.get url("tasks")
+		self.tasks = r.body
+	end
+
 	class ScheduleParams < Hashie::Dash
 		property :unit, required: true
 		property :interval, required: true

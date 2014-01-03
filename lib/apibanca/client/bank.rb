@@ -4,7 +4,7 @@ class Apibanca::Bank < Apibanca::ProxyBase
 
 	class << self
 		def create bank_params
-			raise ArgumentError, "Los parámetros deben ser ApiBanca::Bank::Params" unless bank_params.is_a? Apibanca::Bank::Params
+			raise ArgumentError, "Los parámetros deben ser ApiBanca::Bank::BankCreationParams" unless bank_params.is_a? Apibanca::Bank::BankCreationParams
 			r = Apibanca::Client.post url, { bank: bank_params.to_hash }
 			bank = Apibanca::Bank.new(r.body)
 			bank.routines.map! { |r| Apibanca::Routine.new(r) }
@@ -17,6 +17,16 @@ class Apibanca::Bank < Apibanca::ProxyBase
 			bank.routines.map! { |r| Apibanca::Routine.new(r) }
 			bank.routines.each { |r| r.refresh! } if recursive
 			bank
+		end
+
+		def index recursive=false
+			r = Apibanca::Client.get url
+			r.body.map do |raw|
+				bank = Apibanca::Bank.new(raw)
+				bank.routines.map! { |r| Apibanca::Routine.new(r) }
+				bank.routines.each { |r| r.refresh! } if recursive
+				bank
+			end
 		end
 	end
 
@@ -34,10 +44,32 @@ class Apibanca::Bank < Apibanca::ProxyBase
 		true
 	end
 
-	class Params < Hashie::Dash
+	def add_routine routine_params
+		raise ArgumentError, "Los parámetros deben ser ApiBanca::Bank::RoutineCreationParams" unless routine_params.is_a? Apibanca::Bank::RoutineCreationParams
+		r = Apibanca::Client.post url("add_routine"), routine_params.to_hash
+		r.body.routines.each do |routine|
+			new_routine = Apibanca::Routine(routine) unless self.routines.map { |i| i.id }.include?(routine.id)
+			next unless new_routine
+			new_routine.refresh!
+			self.routines << new_routine
+		end
+	end
+
+	def delete
+		r = Apibanca::Client.delete url
+		true
+	end
+
+	class BankCreationParams < Hashie::Dash
 		property :name, :required => true
 		property :user, :required => true
 		property :account, :required => true
 		property :pass, :required => true
+	end
+
+	class RoutineCreationParams < Hashie::Dash
+		property :nombre, :required => true
+		property :target, :required => true
+		property :what_to_do, :required => true
 	end
 end
