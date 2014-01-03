@@ -46,9 +46,9 @@ class Apibanca::Bank < Apibanca::ProxyBase
 
 	def add_routine routine_params
 		raise ArgumentError, "Los parámetros deben ser ApiBanca::Bank::RoutineCreationParams" unless routine_params.is_a? Apibanca::Bank::RoutineCreationParams
-		r = Apibanca::Client.post url("add_routine"), routine_params.to_hash
+		r = Apibanca::Client.post url("add_routine"), { routine: routine_params.to_hash }
 		r.body.routines.each do |routine|
-			new_routine = Apibanca::Routine(routine) unless self.routines.map { |i| i.id }.include?(routine.id)
+			new_routine = Apibanca::Routine.new(routine) unless self.routines.map { |i| i.id }.include?(routine.id)
 			next unless new_routine
 			new_routine.refresh!
 			self.routines << new_routine
@@ -58,6 +58,11 @@ class Apibanca::Bank < Apibanca::ProxyBase
 	def delete
 		r = Apibanca::Client.delete url
 		true
+	end
+
+	def load_deposits
+		r = Apibanca::Client.get url("deposits")
+		self.deposits = r.body.map { |d| Apibanca::Deposit.new(d) }
 	end
 
 	class BankCreationParams < Hashie::Dash
