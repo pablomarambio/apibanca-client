@@ -53,5 +53,6 @@ module Apibanca
 	end
 end
 
+require "apibanca/client/proxy_base"
 require "apibanca/client/bank"
 require "apibanca/client/routine"

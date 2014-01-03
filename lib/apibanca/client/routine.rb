@@ -1,14 +1,6 @@
-class Apibanca::Routine < Hashie::Mash
+class Apibanca::Routine < Apibanca::ProxyBase
 
-	def url extra=nil
-		"routines/#{self.id}#{extra ? "/" + extra : ""}"
-	end
-
-	class << self
-		def url extra=nil
-			"routines#{extra ? "/" + extra : ""}"
-		end
-	end
+	set_relative_url "routines"
 
 	def refresh!
 		r = Apibanca::Client.get url
