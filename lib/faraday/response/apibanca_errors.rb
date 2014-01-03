@@ -5,11 +5,19 @@ module Faraday
 			def call(env)
 				@app.call(env).on_complete do
 					resp = env[:response].body
-					case env[:status]
-					when 401, 403
-						raise Apibanca::Client::UnauthorizedError.new(resp.backtrace, nil), resp.error
-					when 400, 404..499
-						raise Apibanca::Client::InvalidOperationError.new(resp.backtrace, resp[:"object-errors"]), resp.error
+					if env[:status] >= 400 && env[:status] <= 500
+						if resp.respond_to? :backtrace
+							case env[:status]
+							when 401, 403
+								raise Apibanca::Client::UnauthorizedError.new(resp.backtrace, nil), resp.error
+							when 404
+								raise Apibanca::Client::UnauthorizedError.new(resp.backtrace, nil), resp.error
+							else
+								raise Apibanca::Client::InvalidOperationError.new(resp.backtrace, resp[:"object-errors"]), resp.error
+							end
+						else
+							raise "Error inesperado #{env[:status]}"
+						end
 					end
 				end
 			end

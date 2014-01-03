@@ -9,4 +9,6 @@ class Apibanca::Client
 	end
 
 	class UnauthorizedError < InvalidOperationError; end
+
+	class NotFoundError < InvalidOperationError; end
 end
