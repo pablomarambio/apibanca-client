@@ -40,7 +40,7 @@ module Apibanca
 				end
 			end
 
-			def conn_json
+			def conn_form
 				check_requirements!
 				@conn ||= Faraday.new(:url => @base_uri) do |f|
 					f.request :apibanca_request_logger
