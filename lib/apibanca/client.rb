@@ -97,4 +97,5 @@ end
 require "apibanca/client/proxy_base"
 require "apibanca/client/bank"
 require "apibanca/client/deposit"
+require "apibanca/client/deposit_version"
 require "apibanca/client/routine"

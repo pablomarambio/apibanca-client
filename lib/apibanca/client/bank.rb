@@ -62,7 +62,7 @@ class Apibanca::Bank < Apibanca::ProxyBase
 
 	def load_deposits params=nil
 		r = Apibanca::Client.get url("deposits"), params
-		self.deposits = r.body.map { |d| Apibanca::Deposit.new(d) }
+		self.deposits = r.body.map { |d| nd = Apibanca::Deposit.new(d); nd.obj_bank = self; nd }
 	end
 
 	class BankCreationParams < Hashie::Dash
