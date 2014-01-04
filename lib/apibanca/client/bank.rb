@@ -60,8 +60,8 @@ class Apibanca::Bank < Apibanca::ProxyBase
 		true
 	end
 
-	def load_deposits
-		r = Apibanca::Client.get url("deposits")
+	def load_deposits params=nil
+		r = Apibanca::Client.get url("deposits"), params
 		self.deposits = r.body.map { |d| Apibanca::Deposit.new(d) }
 	end
 
