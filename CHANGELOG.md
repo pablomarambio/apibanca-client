@@ -1,5 +1,10 @@
 # Bitácora de cambios
 
+## 0.0.3
+
+### Eliminación de rutinas
+Para eliminar una rutina se debe invocar el método `delete` en ella.
+
 ## 0.0.2
 
 ### Configuración del cliente
