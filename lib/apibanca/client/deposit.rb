@@ -1,6 +1,6 @@
 class Apibanca::Deposit < Apibanca::ProxyBase
 	def load_history
-		h = Apibanca::Client.get obj_bank.url("deposits/#{self.id}/history")
+		h = obj_client.get obj_bank.url("deposits/#{self.id}/history")
 		@history = h.body.map { |d| dv = Apibanca::DepositVersion.new(d); dv.obj_deposit = self; dv }
 	end
 

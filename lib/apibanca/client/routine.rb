@@ -3,28 +3,28 @@ class Apibanca::Routine < Apibanca::ProxyBase
 	set_relative_url "routines"
 
 	def refresh!
-		r = Apibanca::Client.get url
+		r = obj_client.get url
 		self.merge! r.body
 	end
 
 	def turn_on
-		r = Apibanca::Client.patch url("turn_on")
+		r = obj_client.patch url("turn_on")
 		self.merge! r.body
 	end
 
 	def turn_off
-		r = Apibanca::Client.patch url("turn_off")
+		r = obj_client.patch url("turn_off")
 		self.merge! r.body
 	end
 
 	def schedule params
 		raise ArgumentError, "Los parámetros deben ser ApiBanca::Routine::ScheduleParams" unless params.is_a? Apibanca::Routine::ScheduleParams
-		r = Apibanca::Client.patch url("schedule"), params.to_hash
+		r = obj_client.patch url("schedule"), params.to_hash
 		self.merge! r.body
 	end
 
 	def load_tasks
-		r = Apibanca::Client.get url("tasks")
+		r = obj_client.get url("tasks")
 		self.tasks = r.body
 	end
 
