@@ -12,4 +12,8 @@ class Apibanca::ProxyBase < Hashie::Mash
 			EOM
 		end
 	end
+
+	def inspect
+		to_s
+	end
 end

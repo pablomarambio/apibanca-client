@@ -28,6 +28,16 @@ class Apibanca::Routine < Apibanca::ProxyBase
 		self.tasks = r.body
 	end
 
+	def delete
+		obj_client.delete url
+		self.obj_bank.routines.select! { |r| r.id != self.id } if self.obj_bank.routines.any?
+		true
+	end
+
+	def to_s
+		"(Rutina #{id}) #{nombre} #{target ? "#{what_to_do}:#{target}" : ""} tasks=#{scheduled_tasks} #{!active ? "INACTIVE" : ""}"
+	end
+
 	class ScheduleParams < Hashie::Dash
 		property :unit, required: true
 		property :interval, required: true

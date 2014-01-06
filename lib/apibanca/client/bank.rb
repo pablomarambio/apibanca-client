@@ -8,7 +8,7 @@ class Apibanca::Bank < Apibanca::ProxyBase
 			r = client.post url, { bank: bank_params.to_hash }
 			bank = Apibanca::Bank.new(r.body)
 			bank.obj_client = client
-			bank.routines.map! { |r| Apibanca::Routine.new(r) }
+			bank.routines.map! { |r| Apibanca::Routine.new(r); r.obj_bank = bank; r }
 			bank
 		end
 
@@ -17,7 +17,7 @@ class Apibanca::Bank < Apibanca::ProxyBase
 			bank = Apibanca::Bank.new(r.body)
 			bank.obj_client = client
 			bank.routines.map! { |r| Apibanca::Routine.new(r) }
-			bank.routines.each { |r| r.refresh! } if recursive
+			bank.routines.each { |r| r.obj_client = client; r.obj_bank = bank; r.refresh! } if recursive
 			bank
 		end
 
@@ -27,7 +27,7 @@ class Apibanca::Bank < Apibanca::ProxyBase
 				bank = Apibanca::Bank.new(raw)
 				bank.obj_client = client
 				bank.routines.map! { |r| Apibanca::Routine.new(r) }
-				bank.routines.each { |r| r.refresh! } if recursive
+				bank.routines.each { |r| r.obj_client = client; r.obj_bank = bank; r.refresh! } if recursive
 				bank
 			end
 		end
@@ -38,7 +38,7 @@ class Apibanca::Bank < Apibanca::ProxyBase
 		old_routines = self.routines
 		self.merge! r.body
 		self.routines = old_routines
-		self.routines.each { |r| r.refresh! } if recursive
+		self.routines.each { |r| r.obj_client = obj_client; r.obj_bank = self; r.refresh! } if (recursive && self.routines.any?)
 		self
 	end
 
@@ -51,16 +51,18 @@ class Apibanca::Bank < Apibanca::ProxyBase
 		raise ArgumentError, "Los parámetros deben ser ApiBanca::Bank::RoutineCreationParams" unless routine_params.is_a? Apibanca::Bank::RoutineCreationParams
 		r = obj_client.post url("add_routine"), { routine: routine_params.to_hash }
 		r.body.routines.each do |routine|
-			new_routine = Apibanca::Routine.new(routine) unless self.routines.map { |i| i.id }.include?(routine.id)
+			new_routine = Apibanca::Routine.new(routine) unless (self.routines.any? && self.routines.any? { |r| r.id == routine.id })
 			next unless new_routine
 			new_routine.obj_client = self.obj_client
+			new_routine.obj_bank = self
 			new_routine.refresh!
 			self.routines << new_routine
 		end
+		routines.last
 	end
 
 	def delete
-		r = obj_client.delete url
+		obj_client.delete url
 		true
 	end
 
@@ -70,11 +72,7 @@ class Apibanca::Bank < Apibanca::ProxyBase
 	end
 
 	def to_s
-		"Banco #{name} / #{user} / #{account}"
-	end
-
-	def inspect
-		to_s
+		"(Banco #{id}) #{name} / #{user} / #{account}"
 	end
 
 	class BankCreationParams < Hashie::Dash
