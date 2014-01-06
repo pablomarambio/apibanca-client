@@ -50,6 +50,7 @@ banco.id
 
 Indica si los parámetros de acceso a la cuenta son correctos. Nota: asegúrate de que lo sean; de otra forma el banco puede bloquear el acceso a la cuenta.
 
+```ruby
 # banco = Apibanca::Bank.create(...)
 banco.status # sólo se puede utilizar cuando cambie a 'ready'. Este cambio de estado toma 5 minutos aproximadamente.
 # => idle
@@ -95,8 +96,10 @@ A medida que las rutinas de lectura de depósitos procesen la cartola y las tran
 
 Es posible cargar un arreglo con los bancos cargados en la cuenta
 
+```ruby
 banks = Apibanca::Bank.index(client)
 # -> GET http://api-banca.herokuapp.com/api/2013-11-4/banks/ 
 # => [(Banco 3304) BICE / <usuario> / <cuenta>, (Banco 3323) SCOTIA / <usuario> / <cuenta>]
 banks.first.id
 # => 3304
+```
