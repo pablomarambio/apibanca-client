@@ -16,4 +16,9 @@ class Apibanca::ProxyBase < Hashie::Mash
 	def inspect
 		to_s
 	end
+
+	def initialize(client, source_hash = nil, default = nil, &block)
+		super(source_hash, default, &block)
+		self.obj_client = client
+	end
 end

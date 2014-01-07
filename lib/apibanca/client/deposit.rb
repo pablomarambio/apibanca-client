@@ -11,4 +11,9 @@ class Apibanca::Deposit < Apibanca::ProxyBase
 	def history
 		@history ||= load_history
 	end
+
+	def initialize(client, bank, source_hash = nil, default = nil, &block)
+		super(client, source_hash, default, &block)
+		self.obj_bank = bank
+	end
 end

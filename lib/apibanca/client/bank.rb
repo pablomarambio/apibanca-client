@@ -6,28 +6,23 @@ class Apibanca::Bank < Apibanca::ProxyBase
 		def create client, bank_params
 			raise ArgumentError, "Los parámetros deben ser ApiBanca::Bank::BankCreationParams" unless bank_params.is_a? Apibanca::Bank::BankCreationParams
 			r = client.post url, { bank: bank_params.to_hash }
-			bank = Apibanca::Bank.new(r.body)
-			bank.obj_client = client
-			bank.routines.map! { |r| Apibanca::Routine.new(r); r.obj_bank = bank; r }
+			bank = Apibanca::Bank.new(client, r.body)
+			bank.load_routines! false
 			bank
 		end
 
 		def load client, id, recursive=true
 			r = client.get url("#{id}")
-			bank = Apibanca::Bank.new(r.body)
-			bank.obj_client = client
-			bank.routines.map! { |r| Apibanca::Routine.new(r) }
-			bank.routines.each { |r| r.obj_client = client; r.obj_bank = bank; r.refresh! } if recursive
+			bank = Apibanca::Bank.new(client, r.body)
+			bank.load_routines! recursive
 			bank
 		end
 
 		def index client, params=nil, recursive=false
 			r = client.get url, params
 			r.body.map do |raw|
-				bank = Apibanca::Bank.new(raw)
-				bank.obj_client = client
-				bank.routines.map! { |r| Apibanca::Routine.new(r) }
-				bank.routines.each { |r| r.obj_client = client; r.obj_bank = bank; r.refresh! } if recursive
+				bank = Apibanca::Bank.new(client, raw)
+				bank.load_routines! recursive
 				bank
 			end
 		end
@@ -35,10 +30,8 @@ class Apibanca::Bank < Apibanca::ProxyBase
 
 	def refresh! recursive=true
 		r = obj_client.get url
-		old_routines = self.routines
 		self.merge! r.body
-		self.routines = old_routines
-		self.routines.each { |r| r.obj_client = obj_client; r.obj_bank = self; r.refresh! } if (recursive && self.routines.any?)
+		self.load_routines! recursive
 		self
 	end
 
@@ -51,10 +44,8 @@ class Apibanca::Bank < Apibanca::ProxyBase
 		raise ArgumentError, "Los parámetros deben ser ApiBanca::Bank::RoutineCreationParams" unless routine_params.is_a? Apibanca::Bank::RoutineCreationParams
 		r = obj_client.post url("add_routine"), { routine: routine_params.to_hash }
 		r.body.routines.each do |routine|
-			new_routine = Apibanca::Routine.new(routine) unless (self.routines.any? && self.routines.any? { |r| r.id == routine.id })
-			next unless new_routine
-			new_routine.obj_client = self.obj_client
-			new_routine.obj_bank = self
+			next unless self.routines.any? { |r| r.id == routine.id }
+			new_routine = Apibanca::Routine.new(obj_client, self, routine)
 			new_routine.refresh!
 			self.routines << new_routine
 		end
@@ -68,11 +59,23 @@ class Apibanca::Bank < Apibanca::ProxyBase
 
 	def load_deposits params=nil
 		r = obj_client.get url("deposits"), params
-		self.deposits = r.body.map { |d| nd = Apibanca::Deposit.new(d); nd.obj_bank = self; nd.obj_client = obj_client; nd }
+		self.deposits = r.body.map { |d| nd = Apibanca::Deposit.new(obj_client, self, d) }
+	end
+
+	def load_jobs params=nil
+		r = obj_client.get url, params
+		self.jobs = r.body.each do |raw|
+			Apibanca::Job.new(obj_client, raw)
+		end
 	end
 
 	def to_s
 		"(Banco #{id}) #{name} / #{user} / #{account}"
+	end
+
+	def load_routines! recursive=true
+		self.routines.map! { |r| Apibanca::Routine.new(self.obj_client, self, r) }
+		self.routines.each { |r| r.refresh! } if recursive
 	end
 
 	class BankCreationParams < Hashie::Dash

@@ -38,6 +38,11 @@ class Apibanca::Routine < Apibanca::ProxyBase
 		"(Rutina #{id}) #{nombre} #{target ? "#{what_to_do}:#{target}" : ""} tasks=#{scheduled_tasks} #{!active ? "INACTIVE" : ""}"
 	end
 
+	def initialize(client, bank, source_hash = nil, default = nil, &block)
+		super(client, source_hash, default, &block)
+		self.obj_bank = bank
+	end
+
 	class ScheduleParams < Hashie::Dash
 		property :unit, required: true
 		property :interval, required: true
