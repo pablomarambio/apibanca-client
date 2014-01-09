@@ -40,7 +40,11 @@ class Apibanca::Routine < Apibanca::ProxyBase
 
 	def initialize(client, bank, source_hash = nil, default = nil, &block)
 		super(client, source_hash, default, &block)
-		self.obj_bank = bank
+		@obj_bank = bank
+	end
+
+	def obj_bank
+		@obj_bank
 	end
 
 	class ScheduleParams < Hashie::Dash
