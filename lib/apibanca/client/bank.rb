@@ -73,6 +73,14 @@ class Apibanca::Bank < Apibanca::ProxyBase
 		"(Banco #{id}) #{name} / #{user} / #{account}"
 	end
 
+	def buc
+		"#{name} / User [#{user}] / Cuenta [#{account}]"
+	end
+
+	def buc_short
+		"#{name}/#{user}/#{account}"
+	end
+
 	def load_routines! recursive=true
 		self.routines.map! { |r| Apibanca::Routine.new(self.obj_client, self, r) }
 		self.routines.each { |r| r.refresh! } if recursive
