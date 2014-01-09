@@ -17,6 +17,11 @@ class Apibanca::Routine < Apibanca::ProxyBase
 		self.merge! r.body
 	end
 
+	def set_callback type, uri, options=nil
+		r = obj_client.patch url("set_callback"), { cb_type: type, uri: uri, options: options }
+		self.merge! r.body
+	end
+
 	def schedule params
 		raise ArgumentError, "Los parámetros deben ser ApiBanca::Routine::ScheduleParams" unless params.is_a? Apibanca::Routine::ScheduleParams
 		r = obj_client.patch url("schedule"), params.to_hash
