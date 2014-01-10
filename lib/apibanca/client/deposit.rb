@@ -25,9 +25,4 @@ class Apibanca::Deposit < Apibanca::ProxyBase
 	def obj_bank
 		@obj_bank
 	end
-
-	def psd_date
-		puts "hi!"
-		Date.parse(self[:psd_date])
-	end
 end
