@@ -17,7 +17,17 @@ class Apibanca::Deposit < Apibanca::ProxyBase
 		@obj_bank = bank
 	end
 
+	def remove_references
+		super
+		@obj_bank = nil
+	end
+
 	def obj_bank
 		@obj_bank
+	end
+
+	def psd_date
+		puts "hi!"
+		Date.parse(self[:psd_date])
 	end
 end

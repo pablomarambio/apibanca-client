@@ -22,6 +22,11 @@ class Apibanca::ProxyBase < Hashie::Mash
 		@obj_client = client
 	end
 
+	# json-friendly
+	def remove_references
+		@obj_client = nil
+	end
+
 	def obj_client
 		@obj_client
 	end
