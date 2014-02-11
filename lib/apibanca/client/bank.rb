@@ -26,6 +26,11 @@ class Apibanca::Bank < Apibanca::ProxyBase
 				bank
 			end
 		end
+
+		def available client
+			r = client.get url("available")
+			r.body
+		end
 	end
 
 	def refresh! recursive=true
