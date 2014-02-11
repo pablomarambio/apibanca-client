@@ -20,6 +20,7 @@ class Apibanca::ProxyBase < Hashie::Mash
 	def initialize(client, source_hash = nil, default = nil, &block)
 		super(source_hash, default, &block)
 		@obj_client = client
+		parse_dates!
 	end
 
 	# json-friendly
@@ -29,5 +30,15 @@ class Apibanca::ProxyBase < Hashie::Mash
 
 	def obj_client
 		@obj_client
+	end
+
+	def parse_dates!
+		self.keys.each do |k|
+			str_k = k.to_s
+			if str_k =~ /_datetime$/ and self[k]
+				self["#{str_k.gsub("_datetime", "")}_string".to_sym] = self[k]
+				self[k] = DateTime.strptime self[k] rescue nil
+			end
+		end
 	end
 end
