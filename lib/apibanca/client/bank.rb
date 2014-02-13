@@ -62,10 +62,6 @@ class Apibanca::Bank < Apibanca::ProxyBase
 		true
 	end
 
-	def deposits params=nil, page: 1
-		
-	end
-
 	def load_jobs params=nil
 		r = obj_client.get url, params
 		self.jobs = r.body.each do |raw|
@@ -87,7 +83,7 @@ class Apibanca::Bank < Apibanca::ProxyBase
 
 	def search_deposits params={}
 		pb = load_deposit_batch params
-		batch = PaginatedBatch.new(pb, params, self)
+		PaginatedBatch.new(pb, params, self)
 	end
 
 	def load_deposit_batch params={}
@@ -118,12 +114,8 @@ class Apibanca::Bank < Apibanca::ProxyBase
 		extend Forwardable
 		def_delegators :@records, :each
 		def initialize(pb, params, bank)
-			raise ArgumentError unless valid_paginated_batch? pb
+			parse_response pb
 			@bank = bank
-			@records = pb.records
-			@length = pb.total_records
-			@total_pages = pb.total_pages
-			@page = pb.page
 			@params = params
 		end
 
@@ -169,9 +161,16 @@ class Apibanca::Bank < Apibanca::ProxyBase
 
 		def load_page page_number
 			params = @params.merge({page: page_number})
-			pb = @bank.load_deposit_batch params
-			@page = page_number
-			@records = pb.records
+			parse_response(@bank.load_deposit_batch params)
 		end
+
+		def parse_response response
+			raise ArgumentError, "Batch inválido" unless valid_paginated_batch? response
+			@records = response.records.map { |r| m = Hashie::Mash.new(r); m.parse_dates!; m }
+			@length = response.total_records
+			@total_pages = response.total_pages
+			@page = response.page
+		end
+
 	end
 end

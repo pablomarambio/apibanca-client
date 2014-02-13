@@ -5,6 +5,7 @@ require "apibanca/client/version"
 require "apibanca/client/exceptions"
 require "faraday/request/apibanca_request_logger"
 require "faraday/response/apibanca_errors"
+require "hashie_additions/mash"
 
 module Apibanca
 	class Client
