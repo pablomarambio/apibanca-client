@@ -25,4 +25,6 @@ class Apibanca::Deposit < Apibanca::ProxyBase
 	def obj_bank
 		@obj_bank
 	end
+
+	TYPES = %w(cheque transferencia pago proveedores efectivo)
 end

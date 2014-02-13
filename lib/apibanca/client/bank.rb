@@ -2,6 +2,8 @@ class Apibanca::Bank < Apibanca::ProxyBase
 
 	set_relative_url "banks"
 
+	TYPES = %w(BANCO\ SCOTIABANK BANCO\ SECURITY BANCO\ SANTANDER BANCO\ ESTADO BANCO\ CORPBANCA BANCO\ DE\ CHILE BANCO\ RABOBANK BANCO\ BBVA BANCO\ UNKNOWN BANCO\ BICE BANCO\ ITAU BANCO\ BCI BANCO\ BANCO\ INTERNA BANCO\ FALABELLA)
+
 	class << self
 		def create client, bank_params
 			raise ArgumentError, "Los parámetros deben ser ApiBanca::Bank::BankCreationParams" unless bank_params.is_a? Apibanca::Bank::BankCreationParams
@@ -70,7 +72,7 @@ class Apibanca::Bank < Apibanca::ProxyBase
 	end
 
 	def to_s
-		"(Banco #{id}) #{name} / #{user} / #{account}"
+		"(BANCO\ #{id}) #{name} / #{user} / #{account}"
 	end
 
 	def buc
