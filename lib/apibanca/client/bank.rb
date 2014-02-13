@@ -62,9 +62,8 @@ class Apibanca::Bank < Apibanca::ProxyBase
 		true
 	end
 
-	def load_deposits params=nil
-		r = obj_client.get url("deposits"), params
-		self.deposits = r.body.map { |d| nd = Apibanca::Deposit.new(obj_client, self, d) }
+	def deposits params=nil, page: 1
+		
 	end
 
 	def load_jobs params=nil
@@ -86,6 +85,16 @@ class Apibanca::Bank < Apibanca::ProxyBase
 		"#{name}/#{user}/#{account}"
 	end
 
+	def search_deposits params={}
+		pb = load_deposit_batch params
+		batch = PaginatedBatch.new(pb, params, self)
+	end
+
+	def load_deposit_batch params={}
+		r = obj_client.get url("deposits"), params
+		r.body # server paginated batch
+	end
+
 	def load_routines! recursive=true
 		self.routines.map! { |r| Apibanca::Routine.new(self.obj_client, self, r) }
 		self.routines.each { |r| r.refresh! } if recursive
@@ -102,5 +111,67 @@ class Apibanca::Bank < Apibanca::ProxyBase
 		property :nombre, :required => true
 		property :target, :required => true
 		property :what_to_do, :required => true
+	end
+
+	class PaginatedBatch
+		include Enumerable
+		extend Forwardable
+		def_delegators :@records, :each
+		def initialize(pb, params, bank)
+			raise ArgumentError unless valid_paginated_batch? pb
+			@bank = bank
+			@records = pb.records
+			@length = pb.total_records
+			@total_pages = pb.total_pages
+			@page = pb.page
+			@params = params
+		end
+
+		def next_page
+			raise "No hay más registros" if @page == @total_pages
+			n_page = @page + 1
+			load_page n_page
+		end
+
+		def previous_page
+			raise "Estás en la primera página" if @page == 0
+			n_page = @page - 1
+			load_page n_page
+		end
+
+		def length
+			@length
+		end
+		alias_method :total_records, :length
+
+		def total_pages
+			@total_pages
+		end
+		alias_method :pages, :total_pages
+
+		def current_page
+			@page
+		end
+		alias_method :page, :current_page
+
+		def inspect
+			"#{@records.length}/#{self.length} depósitos [página #{self.page}/#{self.pages}]"
+		end
+
+		private
+		def valid_paginated_batch?(pb=nil)
+			pb ||= @pb
+			pb.total_pages && pb.total_pages.is_a?(Fixnum) &&
+			pb.total_records && pb.total_records.is_a?(Fixnum) &&
+			pb.page && pb.page.is_a?(Fixnum) &&
+			pb.records && pb.records.is_a?(Array) && pb.records.any?
+		end
+
+		def load_page page_number
+			params = @params.merge({page: page_number})
+			pb = @bank.load_deposit_batch params
+			@page = page_number
+			@records = pb.records
+		end
 	end
 end
