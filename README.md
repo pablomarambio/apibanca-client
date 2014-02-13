@@ -97,12 +97,59 @@ routine.schedule Apibanca::Routine::ScheduleParams.new( unit: "minutes", interva
 A medida que las rutinas de lectura de depósitos procesen la cartola y las transacciones, se puede invocar una función para descargar los depósitos leídos
 
 ```ruby
-# arreglo con todos los depósitos
-banco.load_deposits
-# => [...]
+# obtención de depósitos leídos. El objeto retornado es una 
+# página que contiene máximo 20 depósitos
+depósitos = banco.search_deposits
+# -> GET http://api-banca.herokuapp.com/api/2013-11-4/banks/14/deposits
+# => 20/18500 depósitos [página 1/925]
 
-banco.deposits.first
-# => (Deposit 209070) 03/01/2014 / cheque / 79.695
+depósitos.length 
+# => 18500
+
+depósitos.page
+# => 1
+
+depósitos.pages
+# => 925
+
+depósitos.first
+# => (Deposit 209070) 03/01/2014 / cheque / 79695
+
+# El batch trae un máximo de 20 depósitos
+contador = 1
+depósitos.each do |d|
+	contador = contador + 1
+end
+contador
+# => 20
+
+depósitos.next_page
+# -> GET http://api-banca.herokuapp.com/api/2013-11-4/banks/14/deposits?page=2
+# => 20/18500 depósitos [página 2/925]
+
+depósitos.first
+# => (Deposit 209070) 02/01/2014 / transferencia / 103445
+```
+
+También podemos buscar depósitos por 3 criterios: `psd_origin_user_rut` o RUT del emisor (sólo para transferencias), `psd_origin_bank` o nombre del banco de origen, y `psd_type` o tipo de depósito
+
+```ruby
+# Bancos que se pueden usar como criterio de búsqueda. Para los tipos de depósito, usar Apibanca::Deposit::TYPES 
+Apibanca::Bank::TYPES
+# => ["BANCO SCOTIABANK", "BANCO SECURITY", "BANCO SANTANDER", "BANCO ESTADO", "BANCO CORPBANCA", "BANCO DE CHILE", "BANCO RABOBANK", "BANCO BBVA", "BANCO UNKNOWN", "BANCO BICE", "BANCO ITAU", "BANCO BCI", "BANCO BANCO INTERNA", "BANCO FALABELLA"]
+
+# Busquemos todas las transferencias provenientes del BCI
+depósitos = bank.search_deposits psd_origin_bank: "BANCO BCI", psd_type: "transferencia"
+# -> GET http://api-banca.herokuapp.com/api/2013-11-4/banks/14/deposits?psd_origin_bank=BANCO+BCI&psd_type=transferencia
+# => 20/140 depósitos [página 1/7]
+
+depósitos.first
+# => (Deposit 4599) 27/01/2014 / transferencia / 98060
+
+# Los resultados de las búsquedas también vienen paginados
+depósitos.next_page
+# -> GET http://api-banca.herokuapp.com/api/2013-11-4/banks/14/deposits?psd_origin_bank=BANCO+BCI&psd_type=transferencia&page=2 
+# => 2
 ```
 
 ### Otras funciones

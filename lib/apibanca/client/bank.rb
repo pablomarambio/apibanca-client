@@ -116,9 +116,9 @@ class Apibanca::Bank < Apibanca::ProxyBase
 		extend Forwardable
 		def_delegators :@records, :each
 		def initialize(pb, params, bank)
-			parse_response pb
 			@bank = bank
 			@params = params
+			parse_response pb
 		end
 
 		def next_page
@@ -168,7 +168,7 @@ class Apibanca::Bank < Apibanca::ProxyBase
 
 		def parse_response response
 			raise ArgumentError, "Batch inválido" unless valid_paginated_batch? response
-			@records = response.records.map { |r| m = Hashie::Mash.new(r); m.parse_dates!; m }
+			@records = response.records.map { |r| m = Apibanca::Deposit.new(@bank.obj_client, @bank, r); m.parse_dates!; m }
 			@length = response.total_records
 			@total_pages = response.total_pages
 			@page = response.page

@@ -5,7 +5,7 @@ class Apibanca::Deposit < Apibanca::ProxyBase
 	end
 
 	def to_s
-		"(Deposit #{id}) #{self.raw_date} / #{self.psd_type ? self.psd_type : self.raw_comment} / #{self.raw_amount}"
+		"(Deposit #{id}) #{self.raw_date} / #{self.psd_type ? self.psd_type : self.raw_comment} / #{self.psd_amount}"
 	end
 
 	def history
