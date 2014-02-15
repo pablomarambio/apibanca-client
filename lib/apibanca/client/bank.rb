@@ -93,6 +93,12 @@ class Apibanca::Bank < Apibanca::ProxyBase
 		r.body # server paginated batch
 	end
 
+	def get_deposit id
+		raise ArgumentError, "ID inválido" unless id.to_s =~ /^\d+$/
+		r = obj_client.get url("deposits/#{id}")
+		Apibanca::Deposit.new(obj_client, self, r.body)
+	end
+
 	def load_routines! recursive=true
 		self.routines.map! { |r| Apibanca::Routine.new(self.obj_client, self, r) }
 		self.routines.each { |r| r.refresh! } if recursive

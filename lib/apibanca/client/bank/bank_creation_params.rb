@@ -1,4 +1,4 @@
-class Apibcanca::Bank
+class Apibanca::Bank
 	class BankCreationParams < Hashie::Dash
 		property :name, :required => true
 		property :user, :required => true
