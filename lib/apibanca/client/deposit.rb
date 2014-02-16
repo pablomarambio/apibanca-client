@@ -26,5 +26,5 @@ class Apibanca::Deposit < Apibanca::ProxyBase
 		@obj_bank
 	end
 
-	TYPES = %w(cheque transferencia pago proveedores efectivo)
+	TYPES = %w(cheque transferencia pago\ proveedores efectivo)
 end
